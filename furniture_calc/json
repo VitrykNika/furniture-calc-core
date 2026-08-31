@@ -1,0 +1,30 @@
+{
+  "format": "furniture-calc-project",
+  "version": 1,
+  "meta": {
+    "name": "Проєкт 1",
+    "client": "",
+    "type": "kitchen",
+    "currency": "UAH",
+    "markupPercent": 0,
+    "createdAt": "2026-02-05T00:00:00.000Z",
+    "updatedAt": "2026-02-05T00:00:00.000Z"
+  },
+  "materials": [
+    { "id": "m1", "name": "ЛДСП 18", "pricePerM2": 0, "wasteFactor": 1.08 }
+  ],
+  "items": [
+    {
+      "id": "i1",
+      "category": "корпус",
+      "name": "Боковина",
+      "wMm": 720,
+      "hMm": 560,
+      "qty": 2,
+      "materialId": "m1",
+      "areaMultiplier": 1.05,
+      "edgeMeters": 0,
+      "edgeType": ""
+    }
+  ]
+}

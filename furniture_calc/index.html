@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Конвертер меблів — Excel/CSV/.project → project.json + Калькулятор
+    </title>
+
+    <style>
+      body {
+        font-family:
+          system-ui,
+          Segoe UI,
+          Roboto,
+          Arial;
+        margin: 0;
+        background: #0b0f14;
+        color: #e7eefc;
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 16px;
+      }
+      .card {
+        background: #111826;
+        border: 1px solid #263246;
+        border-radius: 14px;
+        padding: 14px;
+        margin: 12px 0;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0 0 10px;
+      }
+      h2 {
+        font-size: 14px;
+        margin: 0 0 10px;
+        color: #9fb0cc;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .btn {
+        background: #1a263a;
+        border: 1px solid #263246;
+        color: #e7eefc;
+        padding: 10px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btnPrimary {
+        background: #4f8cff;
+        border-color: transparent;
+        color: #08101c;
+      }
+      .muted {
+        color: #9fb0cc;
+        font-size: 12px;
+      }
+      input,
+      select {
+        background: #0e1522;
+        border: 1px solid #263246;
+        color: #e7eefc;
+        padding: 10px;
+        border-radius: 10px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+      }
+      th,
+      td {
+        border-bottom: 1px solid #263246;
+        padding: 8px;
+        font-size: 13px;
+        text-align: left;
+        vertical-align: middle;
+      }
+      thead th {
+        background: #0e1522;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+      .tableWrap {
+        overflow: auto;
+        border: 1px solid #263246;
+        border-radius: 12px;
+      }
+      .bad {
+        color: #ff4f6d;
+      }
+      .ok {
+        color: #7cfc98;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        table {
+          min-width: 820px;
+        }
+      }
+      .small {
+        font-size: 12px;
+      }
+      .sep {
+        height: 1px;
+        background: #263246;
+        margin: 16px 0;
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <h1>
+        Конвертер: Excel/CSV/.project → Project JSON (для прорахунку меблів по
+        м²)
+      </h1>
+
+      <!-- 1) Upload -->
+      <div class="card">
+        <h2>1) Завантаж файл</h2>
+        <div class="row">
+          <label class="btn">
+            Обрати .xlsx/.csv/.project
+            <input
+              id="file"
+              type="file"
+              accept=".xlsx,.csv,.project,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,application/xml,text/xml"
+              hidden
+            />
+          </label>
+          <span id="fileInfo" class="muted">файл не обрано</span>
+        </div>
+        <p class="muted small">
+          Працює локально в браузері. Файл нікуди не відправляється.
+        </p>
+      </div>
+
+      <!-- 2) Mapping -->
+      <div class="card">
+        <h2>2) Мапінг колонок (тільки для Excel/CSV)</h2>
+        <div id="mapping" class="grid"></div>
+        <p class="muted small">
+          Обов’язково: Назва, Матеріал, W, H, Qty. Для .project мапінг не
+          потрібен — файл імпортується одразу.
+        </p>
+      </div>
+
+      <!-- 3) Preview -->
+      <div class="card">
+        <h2>3) Прев’ю + помилки</h2>
+
+        <div class="row">
+          <label
+            class="muted small"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <input type="checkbox" id="onlyValid" />
+            Показувати тільки валідні
+          </label>
+
+          <button id="btnConvert" class="btn btnPrimary">Конвертувати</button>
+          <button id="btnDownload" class="btn" disabled>
+            Завантажити project.json
+          </button>
+
+          <span id="status" class="muted"></span>
+        </div>
+
+        <div style="margin-top: 10px" class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>name</th>
+                <th>material</th>
+                <th>W</th>
+                <th>H</th>
+                <th>qty</th>
+                <th>category</th>
+                <th class="bad">error</th>
+              </tr>
+            </thead>
+            <tbody id="preview"></tbody>
+          </table>
+        </div>
+
+        <p id="errorsInfo" class="muted small"></p>
+      </div>
+
+      <!-- 4) Calculator (SEPARATE, below converter) -->
+      <div class="card">
+        <h2>4) Калькулятор (м² та сума)</h2>
+
+        <div class="row">
+          <label class="btn btnPrimary">
+            Завантажити project.json
+            <input
+              id="calcFile"
+              type="file"
+              accept=".json,application/json"
+              hidden
+            />
+          </label>
+
+          <button id="exportExcel" class="btn">
+            Експорт кошторису (Excel)
+          </button>
+
+          <span class="muted small">
+            Можна завантажити project.json, який ти скачала з конвертера, або
+            будь-який сумісний.
+          </span>
+        </div>
+
+        <div class="row" style="margin-top: 10px; gap: 16px">
+          <div class="muted small">
+            Загальна площа: <b id="totalArea">—</b> м²
+          </div>
+          <div class="muted small">
+            Площа з відходами: <b id="effectiveArea">—</b> м²
+          </div>
+          <div class="muted small">
+            Разом матеріали: <b id="materialsSum">—</b>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top: 10px; gap: 16px">
+          <label
+            class="muted small"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            Націнка %
+            <input
+              id="markupInput"
+              type="number"
+              min="0"
+              step="1"
+              value="0"
+              style="width: 120px"
+            />
+          </label>
+
+          <div class="muted small">
+            Разом з націнкою: <b id="totalWithMarkup">—</b>
+          </div>
+        </div>
+
+        <p class="muted small" style="margin-top: 8px">
+          Введи ціну за м² для кожного матеріалу — сума перераховується
+          автоматично.
+        </p>
+
+        <div class="tableWrap" style="margin-top: 10px">
+          <table>
+            <thead>
+              <tr>
+                <th>Матеріал</th>
+                <th>Waste</th>
+                <th>Площа (м²)</th>
+                <th>Площа з відходами (м²)</th>
+                <th>Ціна за м²</th>
+                <th>Сума</th>
+              </tr>
+            </thead>
+            <tbody id="materialsTable"></tbody>
+          </table>
+        </div>
+
+        <p class="muted small" style="margin-top: 8px">
+          * Формула: площа = (Wмм × Hмм / 1 000 000) × qty; ефективна = площа ×
+          wasteFactor × areaMultiplier.
+        </p>
+      </div>
+    </div>
+
+    <!-- SheetJS (XLSX parser + export) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- Your app -->
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>
