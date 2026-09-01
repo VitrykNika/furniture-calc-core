@@ -1,3 +1,4 @@
+import { calcCncBreakdown } from "./cncBreakdown.js";
 export function calcMaterialsBreakdown(project) {
   const matById = new Map(
     (project.materials || []).map((m) => [m.id, m])
@@ -212,9 +213,16 @@ export function calcMaterialsBreakdown(project) {
   // ПІДСУМОК
   // =========================================================
 
-  const totalCost =
-    totalMaterialCost +
-    totalEdgingCost;
+const cnc =
+  calcCncBreakdown(project);
+
+const totalCncCost =
+  cnc.totalCncCost;
+
+const totalCost =
+  totalMaterialCost +
+  totalEdgingCost +
+  totalCncCost;
 
   return {
     // Старі поля залишаємо,
@@ -234,5 +242,9 @@ export function calcMaterialsBreakdown(project) {
 
     totalMaterialCost,
     totalEdgingCost,
+
+      // CNC
+  cnc,
+  totalCncCost,
   };
 }

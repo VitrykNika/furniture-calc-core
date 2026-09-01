@@ -245,6 +245,7 @@
           </div>
           <div class="muted small">Разом крайка: <b id="edgingSum">—</b></div>
         </div>
+        <div class="muted small">Разом CNC: <b id="cncSumTop">—</b></div>
 
         <div class="row" style="margin-top: 10px; gap: 16px">
           <label
@@ -304,6 +305,80 @@
 
               <tbody id="edgingTable"></tbody>
             </table>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px">
+          <h3>CNC</h3>
+
+          <div class="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Операція</th>
+                  <th>Кількість / довжина</th>
+                  <th>Ціна</th>
+                  <th>Сума</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>Свердління</strong>
+                    <div class="muted small" id="drillingDetails"></div>
+                  </td>
+
+                  <td><span id="drillingCount">—</span> шт</td>
+
+                  <td>
+                    <input
+                      id="drillingPrice"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value="0"
+                      style="width: 140px"
+                    />
+                    грн / отвір
+                  </td>
+
+                  <td>
+                    <span id="drillingCost">—</span>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <strong>Фрезерування</strong>
+                    <div class="muted small" id="millingDetails"></div>
+                  </td>
+
+                  <td><span id="millingMeters">—</span> м</td>
+
+                  <td>
+                    <input
+                      id="millingPrice"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value="0"
+                      style="width: 140px"
+                    />
+                    грн / м
+                  </td>
+
+                  <td>
+                    <span id="millingCost">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="muted small" style="margin-top: 10px">
+            Разом CNC:
+            <b id="cncSum">—</b>
           </div>
         </div>
 

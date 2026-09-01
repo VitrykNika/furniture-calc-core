@@ -20,9 +20,22 @@ export const els = {
 
   materialsSum: document.querySelector("#materialsSum"),
   edgingSum: document.querySelector("#edgingSum"),
+  cncSumTop: document.querySelector("#cncSumTop"),
 
   materialsTable: document.querySelector("#materialsTable"),
   edgingTable: document.querySelector("#edgingTable"),
+
+  drillingCount: document.querySelector("#drillingCount"),
+  drillingPrice: document.querySelector("#drillingPrice"),
+  drillingCost: document.querySelector("#drillingCost"),
+  drillingDetails: document.querySelector("#drillingDetails"),
+
+  millingMeters: document.querySelector("#millingMeters"),
+  millingPrice: document.querySelector("#millingPrice"),
+  millingCost: document.querySelector("#millingCost"),
+  millingDetails: document.querySelector("#millingDetails"),
+
+  cncSum: document.querySelector("#cncSum"),
 
   markupInput: document.querySelector("#markupInput"),
   totalWithMarkup: document.querySelector("#totalWithMarkup"),

@@ -33,6 +33,29 @@ export function clearCalculatorUi(els) {
 
   els.edgingTable &&
     (els.edgingTable.innerHTML = "");
+  els.drillingCount &&
+  (els.drillingCount.textContent = "—");
+
+els.drillingCost &&
+  (els.drillingCost.textContent = "—");
+
+els.drillingDetails &&
+  (els.drillingDetails.textContent = "");
+
+els.millingMeters &&
+  (els.millingMeters.textContent = "—");
+
+els.millingCost &&
+  (els.millingCost.textContent = "—");
+
+els.millingDetails &&
+  (els.millingDetails.textContent = "");
+
+els.cncSum &&
+  (els.cncSum.textContent = "—");
+
+els.cncSumTop &&
+  (els.cncSumTop.textContent = "—");
 }
 
 
@@ -262,4 +285,79 @@ export function renderCalculator(
         .appendChild(tr);
     }
   }
+  // =========================================================
+// CNC
+// =========================================================
+
+const cnc = res.cnc;
+
+if (cnc) {
+  // -------------------------------------------------------
+  // СВЕРДЛІННЯ
+  // -------------------------------------------------------
+
+  els.drillingCount &&
+    (
+      els.drillingCount.textContent =
+        String(cnc.drillingCount)
+    );
+
+  els.drillingCost &&
+    (
+      els.drillingCost.textContent =
+        `${money(cnc.drillingCost)} UAH`
+    );
+
+  if (els.drillingDetails) {
+    els.drillingDetails.textContent =
+      cnc.drillingByTool
+        .map(
+          (r) =>
+            `${r.tool} × ${r.count}`
+        )
+        .join(" · ");
+  }
+
+  // -------------------------------------------------------
+  // ФРЕЗЕРУВАННЯ
+  // -------------------------------------------------------
+
+  els.millingMeters &&
+    (
+      els.millingMeters.textContent =
+        money(cnc.millingMeters)
+    );
+
+  els.millingCost &&
+    (
+      els.millingCost.textContent =
+        `${money(cnc.millingCost)} UAH`
+    );
+
+  if (els.millingDetails) {
+    els.millingDetails.textContent =
+      cnc.millingByTool
+        .map(
+          (r) =>
+            `${r.tool}: ${money(r.meters)} м`
+        )
+        .join(" · ");
+  }
+
+  // -------------------------------------------------------
+  // CNC TOTAL
+  // -------------------------------------------------------
+
+  els.cncSum &&
+    (
+      els.cncSum.textContent =
+        `${money(cnc.totalCncCost)} UAH`
+    );
+
+  els.cncSumTop &&
+    (
+      els.cncSumTop.textContent =
+        `${money(cnc.totalCncCost)} UAH`
+    );
+}
 }

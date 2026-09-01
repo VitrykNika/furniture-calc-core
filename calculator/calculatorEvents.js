@@ -162,6 +162,56 @@ export function initCalculatorEvents(els, state) {
     );
 
   // =========================================================
+// CNC PRICES
+// =========================================================
+
+function updateCncPrices() {
+  if (!state.calcProject) {
+    return;
+  }
+
+  state.calcProject.meta ??= {};
+
+  state.calcProject.meta.cncPrices ??= {
+    drillingPerHole: 0,
+    millingPerMeter: 0,
+  };
+
+  const drillingPrice =
+    els.drillingPrice?.valueAsNumber;
+
+  const millingPrice =
+    els.millingPrice?.valueAsNumber;
+
+  state.calcProject.meta.cncPrices.drillingPerHole =
+    Number.isFinite(drillingPrice)
+      ? drillingPrice
+      : 0;
+
+  state.calcProject.meta.cncPrices.millingPerMeter =
+    Number.isFinite(millingPrice)
+      ? millingPrice
+      : 0;
+
+  renderCalculator(
+    els,
+    state.calcProject
+  );
+}
+
+els.drillingPrice
+  ?.addEventListener(
+    "input",
+    updateCncPrices
+  );
+
+els.millingPrice
+  ?.addEventListener(
+    "input",
+    updateCncPrices
+  );
+  
+  // =========================================================
   // MARKUP
   // =========================================================
 

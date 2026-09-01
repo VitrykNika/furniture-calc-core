@@ -2,7 +2,7 @@ import { toNumber, round2 } from "../utils/numbers.js";
 import { calcMaterialsBreakdown } from "./breakdown.js";
 
 // =========================================================
-// CNC SUMMARY
+// CNC SUMMARY FOR ONE ITEM
 // =========================================================
 
 function getCncSummary(item) {
@@ -76,18 +76,20 @@ function getCncSummary(item) {
 
   const multipliedDrillingByTool = {};
 
-  for (const [tool, count] of Object.entries(
-    drillingByTool
-  )) {
+  for (
+    const [tool, count] of
+      Object.entries(drillingByTool)
+  ) {
     multipliedDrillingByTool[tool] =
       count * qty;
   }
 
   const multipliedMillingByTool = {};
 
-  for (const [tool, meters] of Object.entries(
-    millingByTool
-  )) {
+  for (
+    const [tool, meters] of
+      Object.entries(millingByTool)
+  ) {
     multipliedMillingByTool[tool] =
       meters * qty;
   }
@@ -121,8 +123,22 @@ export function exportEstimateXlsx(
     );
   }
 
+  // =========================================================
+  // GENERAL CALCULATION
+  // =========================================================
+
   const res =
     calcMaterialsBreakdown(project);
+
+  const drillingPrice =
+    Number(
+      project?.meta?.cncPrices?.drillingPerHole
+    ) || 0;
+
+  const millingPrice =
+    Number(
+      project?.meta?.cncPrices?.millingPerMeter
+    ) || 0;
 
   const markup =
     toNumber(markupPercent) || 0;
@@ -139,6 +155,10 @@ export function exportEstimateXlsx(
   // =========================================================
 
   const estimateRows = [];
+
+  // ---------------------------------------------------------
+  // МАТЕРІАЛИ
+  // ---------------------------------------------------------
 
   estimateRows.push([
     "МАТЕРІАЛИ"
@@ -178,7 +198,7 @@ export function exportEstimateXlsx(
     "",
     "",
     round2(
-      res.totalMaterialCost
+      res.totalMaterialCost || 0
     ),
   ]);
 
@@ -221,7 +241,55 @@ export function exportEstimateXlsx(
     "",
     "",
     round2(
-      res.totalEdgingCost
+      res.totalEdgingCost || 0
+    ),
+  ]);
+
+  // ---------------------------------------------------------
+  // CNC
+  // ---------------------------------------------------------
+
+  estimateRows.push([]);
+
+  estimateRows.push([
+    "CNC"
+  ]);
+
+  estimateRows.push([
+    "Операція",
+    "Кількість / довжина",
+    "Ціна",
+    "Сума",
+  ]);
+
+  estimateRows.push([
+    "Свердління",
+    res.cnc?.drillingCount || 0,
+    round2(drillingPrice),
+    round2(
+      res.cnc?.drillingCost || 0
+    ),
+  ]);
+
+  estimateRows.push([
+    "Фрезерування",
+    round2(
+      res.cnc?.millingMeters || 0
+    ),
+    round2(millingPrice),
+    round2(
+      res.cnc?.millingCost || 0
+    ),
+  ]);
+
+  estimateRows.push([]);
+
+  estimateRows.push([
+    "Разом CNC",
+    "",
+    "",
+    round2(
+      res.totalCncCost || 0
     ),
   ]);
 
@@ -242,7 +310,7 @@ export function exportEstimateXlsx(
     "",
     "",
     round2(
-      res.totalMaterialCost
+      res.totalMaterialCost || 0
     ),
   ]);
 
@@ -253,7 +321,18 @@ export function exportEstimateXlsx(
     "",
     "",
     round2(
-      res.totalEdgingCost
+      res.totalEdgingCost || 0
+    ),
+  ]);
+
+  estimateRows.push([
+    "CNC",
+    "",
+    "",
+    "",
+    "",
+    round2(
+      res.totalCncCost || 0
     ),
   ]);
 
@@ -264,7 +343,7 @@ export function exportEstimateXlsx(
     "",
     "",
     round2(
-      res.totalCost
+      res.totalCost || 0
     ),
   ]);
 
@@ -317,7 +396,7 @@ export function exportEstimateXlsx(
   const detailRows = [];
 
   // ---------------------------------------------------------
-  // ШАПКА
+  // HEADER
   // ---------------------------------------------------------
 
   detailRows.push([
@@ -347,7 +426,7 @@ export function exportEstimateXlsx(
   let index = 1;
 
   // ---------------------------------------------------------
-  // ДЕТАЛІ
+  // DETAILS
   // ---------------------------------------------------------
 
   for (
@@ -406,12 +485,23 @@ export function exportEstimateXlsx(
             edge.side || "";
 
           const thickness =
-            edge.thicknessMm ??
-            "";
+            edge.thicknessMm ?? "";
 
           return `${side}: ${thickness} мм`;
         })
         .join("; ");
+
+    // -------------------------------------------------------
+    // CNC COST FOR THIS ITEM
+    // -------------------------------------------------------
+
+    const drillingCost =
+      cnc.drillingCount *
+      drillingPrice;
+
+    const millingCost =
+      cnc.millingMeters *
+      millingPrice;
 
     // -------------------------------------------------------
     // ROW
@@ -439,22 +529,26 @@ export function exportEstimateXlsx(
       // Свердління
       cnc.drillingCount,
 
-      // Ціна свердління
-      0,
+      round2(
+        drillingPrice
+      ),
 
-      // Вартість свердління
-      0,
+      round2(
+        drillingCost
+      ),
 
       // Фрезерування
       round2(
         cnc.millingMeters
       ),
 
-      // Ціна фрезерування
-      0,
+      round2(
+        millingPrice
+      ),
 
-      // Вартість фрезерування
-      0,
+      round2(
+        millingCost
+      ),
 
       // Крайка
       round2(
@@ -465,7 +559,7 @@ export function exportEstimateXlsx(
 
       edgingText,
 
-      // Детальний CNC
+      // Детальна CNC інформація
       cncText,
     ]);
 
@@ -473,11 +567,15 @@ export function exportEstimateXlsx(
   }
 
   // =========================================================
-  // TOTAL ROW
+  // TOTALS FOR DETAILS
   // =========================================================
 
   let totalDrilling = 0;
+  let totalDrillingCost = 0;
+
   let totalMilling = 0;
+  let totalMillingCost = 0;
+
   let totalEdging = 0;
 
   for (
@@ -490,8 +588,16 @@ export function exportEstimateXlsx(
     totalDrilling +=
       cnc.drillingCount;
 
+    totalDrillingCost +=
+      cnc.drillingCount *
+      drillingPrice;
+
     totalMilling +=
       cnc.millingMeters;
+
+    totalMillingCost +=
+      cnc.millingMeters *
+      millingPrice;
 
     totalEdging +=
       Number(
@@ -511,15 +617,25 @@ export function exportEstimateXlsx(
     "",
     "",
 
-    totalDrilling,
+    round2(
+      totalDrilling
+    ),
+
     "",
-    "",
+
+    round2(
+      totalDrillingCost
+    ),
 
     round2(
       totalMilling
     ),
+
     "",
-    "",
+
+    round2(
+      totalMillingCost
+    ),
 
     round2(
       totalEdging
@@ -528,6 +644,10 @@ export function exportEstimateXlsx(
     "",
     "",
   ]);
+
+  // =========================================================
+  // CREATE DETAILS SHEET
+  // =========================================================
 
   const detailsSheet =
     XLSX.utils.aoa_to_sheet(
@@ -540,6 +660,153 @@ export function exportEstimateXlsx(
     "Деталі"
   );
 
+  // =========================================================
+// 3. ВИМОГИ НА СКЛАД
+// =========================================================
+
+const stockRows = [];
+
+stockRows.push([
+  "№",
+  "Тип",
+  "Код",
+  "Найменування",
+  "Од.в",
+  "Кіл.",
+]);
+
+let stockIndex = 1;
+
+// ---------------------------------------------------------
+// ЛИСТОВІ МАТЕРІАЛИ
+// ---------------------------------------------------------
+
+for (const r of res.materialRows || res.rows || []) {
+  const material = (project.materials || []).find(
+    (m) => m.id === r.materialId
+  );
+
+  const sheetLengthMm =
+    Number(material?.sheetLengthMm) || 0;
+
+  const sheetWidthMm =
+    Number(material?.sheetWidthMm) || 0;
+
+  const sheetAreaM2 =
+    sheetLengthMm > 0 &&
+    sheetWidthMm > 0
+      ? (
+          sheetLengthMm *
+          sheetWidthMm
+        ) / 1_000_000
+      : 0;
+
+  const requiredArea =
+    Number(r.effectiveArea) || 0;
+
+  let sheetsCount = 0;
+  let purchaseArea = requiredArea;
+
+  if (sheetAreaM2 > 0) {
+    sheetsCount =
+      Math.ceil(
+        requiredArea /
+        sheetAreaM2
+      );
+
+    purchaseArea =
+      sheetsCount *
+      sheetAreaM2;
+  }
+
+  let name =
+    material?.name ||
+    r.name ||
+    "";
+
+  if (sheetsCount > 0) {
+    name +=
+      ` (Листи: ${sheetsCount} шт`;
+      
+    if (sheetAreaM2 > 0) {
+      name +=
+        ` · площа 1 листа: ${round2(sheetAreaM2)} м²`;
+    }
+
+    name += ")";
+  }
+
+  stockRows.push([
+    stockIndex,
+    "CS",
+    material?.code || "",
+    name,
+    "м²",
+    round2(purchaseArea),
+  ]);
+
+  stockIndex += 1;
+}
+
+// ---------------------------------------------------------
+// КРАЙКА
+// ---------------------------------------------------------
+
+for (const r of res.edgingRows || []) {
+  stockRows.push([
+    stockIndex,
+    "EL",
+    r.code || "",
+    r.name,
+    "м",
+    round2(r.meters),
+  ]);
+
+  stockIndex += 1;
+}
+
+// ---------------------------------------------------------
+// CNC
+// ---------------------------------------------------------
+
+stockRows.push([]);
+
+stockRows.push([
+  "",
+  "CNC",
+  "",
+  "Свердління",
+  "шт",
+  res.cnc?.drillingCount || 0,
+]);
+
+stockRows.push([
+  "",
+  "CNC",
+  "",
+  "Фрезерування",
+  "м",
+  round2(
+    res.cnc?.millingMeters || 0
+  ),
+]);
+
+// ---------------------------------------------------------
+// CREATE SHEET
+// ---------------------------------------------------------
+
+const stockSheet =
+  XLSX.utils.aoa_to_sheet(
+    stockRows
+  );
+
+XLSX.utils.book_append_sheet(
+  wb,
+  stockSheet,
+  "Вимоги на склад"
+  );
+  
+  
   // =========================================================
   // EXPORT FILE
   // =========================================================
