@@ -37,12 +37,30 @@ export function initCalculatorEvents(els, state) {
     if (!state.calcProject) return;
 
     const id = t.dataset.materialId;
-    const price = toNumber(t.value);
+const price = toNumber(t.value);
+const priceKind = t.dataset.priceKind || "m2";
 
-    const mat = (state.calcProject.materials || []).find((m) => m.id === id);
-    if (mat) mat.pricePerM2 = Number.isFinite(price) ? price : 0;
+const mat = (state.calcProject.materials || [])
+  .find((m) => m.id === id);
 
-    renderCalculator(els, state.calcProject);
+if (mat) {
+  if (priceKind === "meter") {
+    mat.pricePerMeter =
+      Number.isFinite(price)
+        ? price
+        : 0;
+  } else {
+    mat.pricePerM2 =
+      Number.isFinite(price)
+        ? price
+        : 0;
+  }
+}
+
+renderCalculator(
+  els,
+  state.calcProject
+);
   });
 
   // markup input

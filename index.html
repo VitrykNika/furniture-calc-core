@@ -192,13 +192,13 @@
             <thead>
               <tr>
                 <th>#</th>
-                <th>name</th>
-                <th>material</th>
+                <th>Деталь</th>
+                <th>Матеріал</th>
                 <th>W</th>
                 <th>H</th>
-                <th>qty</th>
-                <th>category</th>
-                <th class="bad">error</th>
+                <th>Qty</th>
+                <th>Категорія</th>
+                <th>Крайка / CNC</th>
               </tr>
             </thead>
             <tbody id="preview"></tbody>
@@ -243,6 +243,7 @@
           <div class="muted small">
             Разом матеріали: <b id="materialsSum">—</b>
           </div>
+          <div class="muted small">Разом крайка: <b id="edgingSum">—</b></div>
         </div>
 
         <div class="row" style="margin-top: 10px; gap: 16px">
@@ -285,6 +286,25 @@
             </thead>
             <tbody id="materialsTable"></tbody>
           </table>
+        </div>
+
+        <div style="margin-top: 20px">
+          <h3>Крайка</h3>
+
+          <div class="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Крайка</th>
+                  <th>Пог. м</th>
+                  <th>Ціна за м</th>
+                  <th>Сума</th>
+                </tr>
+              </thead>
+
+              <tbody id="edgingTable"></tbody>
+            </table>
+          </div>
         </div>
 
         <p class="muted small" style="margin-top: 8px">
